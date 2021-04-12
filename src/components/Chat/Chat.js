@@ -6,6 +6,8 @@ import "./Chat.styles.css"
 import {useDispatch, useSelector} from "react-redux"
 import {logout} from "../../redux/actions/userActions"
 
+
+
 const Chat = () => {
     const socketRef = useRef();
     const [messages, setMessages] = useState([])
@@ -17,6 +19,10 @@ const Chat = () => {
 
     const token = useSelector(state => state.user.token)
     const isAdmin = useSelector(state => state.user.isAdmin)
+
+
+
+    const [color, setColor] = useState("")
 
     // const chatRoomName = "chatRoom"
 
@@ -62,9 +68,29 @@ const Chat = () => {
         messageRef.current.value = ""
     }
 
+    const colors = [
+        {css: { color: '#61FF4F' }},
+        {css: { color: '#F5EE4C' }},
+        {css: { color: '#4CF5AB' }},
+        {css: { color: '#FF4FDF' }},
+        {css: { color: '#8C414F' }},
+        {css: { color: '#418C6D' }},
+        {css: { color: '#4CD8F5' }},
+        {css: { color: '#F55343' }},
+        {css: { color: '#F61D19' }},
+        {css: { color: '#2C418F' }}
+    ]
+
     const leaveTheChat = () => {
         socketRef.current.disconnect(0)
         dispatch(logout())
+    }
+
+    function getRandomColor(min, max) {
+        min = Math.ceil(min);
+        max = Math.floor(max);
+        let rand_value = Math.floor(Math.random() * (max - min + 1)) + min; //Максимум и минимум включаются
+        return colors[rand_value].css
     }
 
 
@@ -87,9 +113,10 @@ const Chat = () => {
                     (<Message key={index} message={message} />)
                 ) 
             }
+
             {
                 newMessages.map((message, index) => 
-                    (<Message key={index} message={message} specificClass={userId.id === message.userId ? "currentUser" : "anotherUser"} />)
+                    (<Message key={index} message={message} specificClass={userId.id === message.userId ? "currentUser" : "anotherUser"} color1={colors[Math.floor(Math.random() * colors.length)].css} />)
                 ) 
             }
 

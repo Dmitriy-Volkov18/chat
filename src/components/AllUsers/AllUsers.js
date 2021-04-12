@@ -20,7 +20,7 @@ const AllUsers = ({getAllUsers, isAdmin}) => {
                         allUsers.map((user, index) => (
                             <li key={index}>{user.username}</li>
                         ))
-                    ) : <h2>No users</h2>
+                    ) : <h2>No users found</h2>
                 }
             </ul>
         </div>
