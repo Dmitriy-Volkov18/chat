@@ -3,6 +3,8 @@ import {useDispatch, useSelector} from "react-redux"
 import {Redirect} from "react-router-dom"
 import {loginUser} from "../../redux/actions/userActions"
 
+import "./Login.styles.css"
+
 const Login = () => {
     const [formValue, setFormValue] = useState({
         username: "",
@@ -33,10 +35,11 @@ const Login = () => {
         currentUser ? (<Redirect to="/" />) : 
         (
             <div className="login">
+                <h2>Login</h2>
                 <form method="post" onSubmit={(e) => onSubmit(e)}>
-                    <input type="text" name="username" value={username} onChange={(e) => onChange(e)} placeholder="enter a username" required/>
-                    <input type="email" name="email" value={email} onChange={(e) => onChange(e)} placeholder="enter a email" required/>
-                    <input type="password" name="password" value={password} onChange={(e) => onChange(e)} placeholder="enter a password" required/>
+                    <input type="text" name="username" value={username} onChange={(e) => onChange(e)} placeholder="Enter a username" required/>
+                    <input type="email" name="email" value={email} onChange={(e) => onChange(e)} placeholder="Enter an email" required/>
+                    <input type="password" name="password" value={password} onChange={(e) => onChange(e)} placeholder="Enter a password" required/>
                     <input type="submit" value="Send"/>
                 </form>
             </div>

@@ -94,12 +94,15 @@ io.on("connection", async socket => {
 
         io.to(chatRoom).emit("newMessage", {
             message,
+            date: newMessage.date,
             username: socket.currUser.username,
             userId: socket.currUser.id
         })
 
         await newMessage.save()
     })
+
+
 
     const sockets = await io.fetchSockets();
     for (const socket of sockets) {
@@ -109,13 +112,14 @@ io.on("connection", async socket => {
         allSockets = [...allSockets, socket.currUser.username]
     }
 
-    io.in("chatRoom").emit("fetchOnlineUsers", allSockets);
+    io.emit("fetchOnlineUsers", allSockets);
 
     // socket.on("fetchAllUsers", (allSockets) => {
     //     socket.in(chatRoomName).emit("fetchAllUsers", allSockets)
     // });
     
     socket.on("disconnect", () => {
+        socket.leave(chatRoomName);
         socket.to(chatRoomName).emit("message", socket.currUser.username + " has disconnected")
     })
  });

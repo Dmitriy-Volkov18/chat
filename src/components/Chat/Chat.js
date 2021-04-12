@@ -5,8 +5,7 @@ import AllUsers from '../AllUsers/AllUsers'
 import "./Chat.styles.css"
 import {useDispatch, useSelector} from "react-redux"
 import {logout} from "../../redux/actions/userActions"
-
-
+import axios from "axios"
 
 const Chat = () => {
     const socketRef = useRef();
@@ -20,9 +19,7 @@ const Chat = () => {
     const token = useSelector(state => state.user.token)
     const isAdmin = useSelector(state => state.user.isAdmin)
 
-
-
-    const [color, setColor] = useState("")
+    const [fetchedAllMessages, setFetchedAllMessages] = useState([])
 
     // const chatRoomName = "chatRoom"
 
@@ -58,15 +55,51 @@ const Chat = () => {
             socketRef.current.close()
         }
     }, [newMessages, token])
-    
-    const handleSendMessage = () => {
-        socketRef.current.emit("chatRoomMessage", {
-            chatRoom: "chatRoom",
-            message: messageRef.current.value
-        })
 
-        messageRef.current.value = ""
+
+    useEffect(() => {
+        const asyncFetchMessages = async() => {
+            const config = {
+                headers: {
+                    'Content-Type': 'application/json'
+                }
+            }
+            
+            if(token){
+                config.headers.authorization = token
+                axios.defaults.headers.common['Authorization'] = token;
+            }else{
+                return
+            }
+    
+            let response = await axios.get("http://localhost:5000/api/messages/getAllMessages", config)
+            const data = await response.data
+            setFetchedAllMessages(data.messages)
+        }
+
+        asyncFetchMessages()
+    }, [token])
+
+
+    
+    const handleSendMessage = async (e) => {
+        if(messageRef.current.value === "") return
+        
+        const timer = ms => new Promise(res => setTimeout(res, ms))
+        async function load() { 
+            socketRef.current.emit("chatRoomMessage", {
+                chatRoom: "chatRoom",
+                message: messageRef.current.value
+            })
+
+            messageRef.current.value = ""
+
+            await timer(3000);
+        }
+
+        load()
     }
+
 
     const colors = [
         {css: { color: '#61FF4F' }},
@@ -81,55 +114,67 @@ const Chat = () => {
         {css: { color: '#2C418F' }}
     ]
 
-    const leaveTheChat = () => {
-        socketRef.current.disconnect(0)
-        dispatch(logout())
-    }
+    let randomColor = Math.floor(Math.random() * colors.length)
 
-    function getRandomColor(min, max) {
-        min = Math.ceil(min);
-        max = Math.floor(max);
-        let rand_value = Math.floor(Math.random() * (max - min + 1)) + min; //Максимум и минимум включаются
-        return colors[rand_value].css
+
+    const leaveTheChat = () => {
+        socketRef.current.disconnect()
+        dispatch(logout())
     }
 
 
     return (
-        <div className="chat">
-            <div className="online-users">
-                <ul>
-                    {
-                        onlineUsers.map((onlineUser, index) => (
-                            <li key={index}>{onlineUser}</li>
-                        ))
-                    }
-                </ul>
-            </div>
-
-            <button onClick={leaveTheChat}>Leave the chat</button>
-
-            {
-                messages.map((message, index) => 
-                    (<Message key={index} message={message} />)
-                ) 
-            }
-
-            {
-                newMessages.map((message, index) => 
-                    (<Message key={index} message={message} specificClass={userId.id === message.userId ? "currentUser" : "anotherUser"} color1={colors[Math.floor(Math.random() * colors.length)].css} />)
-                ) 
-            }
-
-
-            <textarea name="userMessage" ref={messageRef} placeholder="Type a message" />
-            <button onClick={handleSendMessage}>Send</button> 
-
-            {
-                isAdmin && (<AllUsers isAdmin={isAdmin} />)
-            }
+        <div className="chat_container">
+            <h1>Welcome to the chat</h1>
             
+            <div className="chat-ui">
+                <div className="online-users-container">
+                    <h2>Online users</h2>
+                    <ul>
+                        {
+                            onlineUsers.map((onlineUser, index) => (
+                                <li key={index}>{onlineUser}</li>
+                            ))
+                        }
+                    </ul>
+                </div>
 
+                <div className="chat-block">
+                    <div className="chat-header">
+                        <button onClick={leaveTheChat}>Leave the chat</button>
+                    </div>
 
+                    <div className="chat-body-block">
+                        {
+                            messages.map((message, index) => 
+                                (<Message key={index} message={message} />)
+                            ) 
+                        }
+
+                        {
+                            fetchedAllMessages.map((message, index) => 
+                                (<Message key={index} message={message} specificClass={userId.id === message.userId ? "currentUser" : "anotherUser"} currentUser={userId.id === message.userId ? true : false} color1={colors[randomColor].css} />)
+                            ) 
+                        }
+
+                        {
+                            newMessages.map((message, index) => 
+                                (<Message key={index} message={message} specificClass={userId.id === message.userId ? "currentUser" : "anotherUser"} currentUser={userId.id === message.userId ? true : false} color1={colors[randomColor].css} />)
+                            ) 
+                        }
+
+                    </div>
+
+                    <div className="form-block">
+                        <textarea name="userMessage" ref={messageRef} placeholder="Type a message 1 to 200 characters" />
+                        <button onClick={(e) => handleSendMessage(e)}>Send</button> 
+                    </div>
+                </div>
+
+                {
+                    isAdmin && (<AllUsers isAdmin={isAdmin} />)
+                }
+            </div>
         </div>
     )
 }

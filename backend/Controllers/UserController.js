@@ -82,6 +82,11 @@ exports.signup = async (req, res, next) => {
                 error: "Please enter all required fields"
             })
         }
+        
+        const usernameRegex = /^[a-zA-Z0-9~@#$^*()_+=[\]{}|\\,.?: -]*$/
+        if(!usernameRegex.test(username)) return res.status(400).json({
+            error: "Username cannot contain any special characters"
+        })
 
         if(username.length < 3){
             return res.status(400).json({
@@ -89,7 +94,7 @@ exports.signup = async (req, res, next) => {
             })
         }
 
-        const emailRegex = /(gmail.com|mail.com)$/
+        const emailRegex = /gmail.com|mail.com$/
         if(!emailRegex.test(email)) return res.status(400).json({
             error: "Enter a correct email"
         })
@@ -175,3 +180,15 @@ exports.createMessage = async (req, res, next) => {
     }
 }
 
+
+exports.deleteAllUsers = async (req, res, next) => {
+    try{
+        await User.deleteMany({})
+
+        res.status(200).json({
+            message: "All users has been deleted"
+        })
+    }catch(err){
+        res.status(500).json("Server error")
+    }
+}

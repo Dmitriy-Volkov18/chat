@@ -1,11 +1,25 @@
+.currentUser,
+.anotherUser{
+    padding: 12px;
+    display: flex;
+    flex-direction: column;
+    margin-bottom: 5px;
+}
+
 .currentUser{
-    background-color: blue;
+    background-color: rgb(202, 202, 202);
 }
 
 .anotherUser{
-    background-color: red;
+    background-color: rgb(219, 219, 219);
 }
 
-/* p{
-    color: #4CF5AB;
-} */
+.currentUser .msgUsername,
+.anotherUser .msgUsername{
+    color: rgb(83, 83, 83);
+}
+
+.anotherUser .msgText,
+.currentUser .msgText{
+    margin-top: 10px;
+}

@@ -12,13 +12,13 @@ const AllUsers = ({getAllUsers, isAdmin}) => {
     }, [isAdmin, getAllUsers])
 
     return (
-        <div className="allUsers-block">
+        <div className="allUsers-container">
             <h2>All users</h2>
             <ul>
                 {
                     (!isLoading && allUsers)  ? (
                         allUsers.map((user, index) => (
-                            <li key={index}>{user.username}</li>
+                            <li key={index}><span><button className="banBtn">Ban</button><button className="unbanBtn">Unban</button><button className="muteBtn">Mute</button><button className="unmuteBtn">Unmute</button></span>{user.username}</li>
                         ))
                     ) : <h2>No users found</h2>
                 }
@@ -26,7 +26,9 @@ const AllUsers = ({getAllUsers, isAdmin}) => {
         </div>
     )
 }
+
 const mapDispatchToProps = dispatch => ({
     getAllUsers: () => dispatch(getAllUsers())
-  })
+})
+
 export default connect(null, mapDispatchToProps)(AllUsers)

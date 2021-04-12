@@ -3,7 +3,7 @@ import {useDispatch, useSelector} from "react-redux"
 import {Link} from 'react-router-dom'
 import {logout} from "../../redux/actions/userActions"
 
-
+import "./Header.styles.css"
 
 const Header = () => {
     const dispatch = useDispatch()
