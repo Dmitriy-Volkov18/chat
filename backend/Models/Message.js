@@ -15,6 +15,8 @@ const messageSchema = new mongoose.Schema({
         ref: "User",
         type: mongoose.Schema.Types.ObjectId
     },
+    username: String
+        
     // chatRoom: {
     //     ref: "ChatRoom",
     //     type: mongoose.Schema.Types.ObjectId

@@ -23,3 +23,8 @@
 .currentUser .msgText{
     margin-top: 10px;
 }
+
+.anotherUser .date,
+.currentUser .date{
+    font-size: 13px;
+}

@@ -3,8 +3,7 @@ import { io } from "socket.io-client";
 import Message from '../Message/Message'
 import AllUsers from '../AllUsers/AllUsers'
 import "./Chat.styles.css"
-import {useDispatch, useSelector} from "react-redux"
-import {logout} from "../../redux/actions/userActions"
+import {useSelector} from "react-redux"
 import axios from "axios"
 
 const Chat = () => {
@@ -22,8 +21,6 @@ const Chat = () => {
     const [fetchedAllMessages, setFetchedAllMessages] = useState([])
 
     // const chatRoomName = "chatRoom"
-
-    const dispatch = useDispatch()
 
     useEffect(() => {
         if(token){
@@ -116,13 +113,6 @@ const Chat = () => {
 
     let randomColor = Math.floor(Math.random() * colors.length)
 
-
-    const leaveTheChat = () => {
-        socketRef.current.disconnect()
-        dispatch(logout())
-    }
-
-
     return (
         <div className="chat_container">
             <h1>Welcome to the chat</h1>
@@ -140,20 +130,18 @@ const Chat = () => {
                 </div>
 
                 <div className="chat-block">
-                    <div className="chat-header">
-                        <button onClick={leaveTheChat}>Leave the chat</button>
-                    </div>
+                    <div className="chat-header"></div>
 
                     <div className="chat-body-block">
-                        {
+                        {/* {
                             messages.map((message, index) => 
                                 (<Message key={index} message={message} />)
                             ) 
-                        }
+                        } */}
 
                         {
                             fetchedAllMessages.map((message, index) => 
-                                (<Message key={index} message={message} specificClass={userId.id === message.userId ? "currentUser" : "anotherUser"} currentUser={userId.id === message.userId ? true : false} color1={colors[randomColor].css} />)
+                                (<Message key={index} message={message} specificClass={userId.id === message.userCreated ? "currentUser" : "anotherUser"} currentUser={userId.id === message.userCreated ? true : false} color1={colors[randomColor].css} />)
                             ) 
                         }
 

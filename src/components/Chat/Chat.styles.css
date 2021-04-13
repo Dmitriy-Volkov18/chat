@@ -39,10 +39,6 @@ h1{
     border-top-right-radius: 10px;
 }
 
-.chat-header button{
-    margin-right: 20px;
-}
-
 .chat-body-block{
     width: 100%;
     background-color: rgb(240, 240, 240);
@@ -138,8 +134,7 @@ h1{
 .allUsers-container ul li span .banBtn,
 .allUsers-container ul li span .unbanBtn,
 .allUsers-container ul li span .muteBtn,
-.allUsers-container ul li span .unmuteBtn,
-.chat-header button{
+.allUsers-container ul li span .unmuteBtn{
     border: none;
     outline: none;
     padding: 5px 7px;
@@ -147,13 +142,6 @@ h1{
     border-radius: 10px;
     cursor: pointer;
     margin: 0 2px;
-}
-
-.chat-header button{
-    background-color: #fff;
-    color: #333;
-    margin-right: 10px;
-    border: 1px solid #333;
 }
 
 .allUsers-container ul li span .banBtn{

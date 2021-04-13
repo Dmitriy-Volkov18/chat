@@ -1,11 +1,12 @@
 import React from 'react'
 import "./Message.styles.css"
+import moment from "moment"
 
 const Message = ({message, specificClass, color1, currentUser}) => {
     if(message instanceof Object){
         return (
             <div className={`${specificClass}`} >
-                <p className="msgUsername">{currentUser ? "You" : message.username} <span>{message.date}</span></p>
+                <p className="msgUsername">{currentUser ? "You" : message.username} - <span className="date">{moment(message.date).startOf('hour').fromNow()}</span></p>
                 <p className="msgText" style={color1}>{message.message}</p>
             </div>
         )

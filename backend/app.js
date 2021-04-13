@@ -68,9 +68,7 @@ io.use(async(socket, next) => {
     }
 });
 
-const chatRoomName = "chatRoom"
-
-let allSockets = []
+const onlineUsers = []
 
 io.on("connection", async socket => {
     socket.emit("message", "Welcome to the chat")
@@ -78,18 +76,24 @@ io.on("connection", async socket => {
 
     socket.on("joinRoom", (chatRoom) => {
         socket.join(chatRoom);
+        onlineUsers.push(socket.currUser.username)
+        io.emit("fetchOnlineUsers", onlineUsers);
         console.log(socket.currUser.username + " joined the room: " + chatRoom)
     })
 
     socket.on("leaveRoom", (chatRoom) => {
         socket.leave(chatRoom);
+        onlineUsers.pop(socket.currUser.username)
+        io.emit("fetchOnlineUsers", onlineUsers);
         console.log(socket.currUser.username + " leave the room: " + chatRoom)
     })
+
 
     socket.on("chatRoomMessage", async ({chatRoom, message}) => {
         const newMessage = new Message({
             message: message,
-            userCreated: socket.currUser.id
+            userCreated: socket.currUser.id,
+            username: socket.currUser.username
         })
 
         io.to(chatRoom).emit("newMessage", {
@@ -103,24 +107,14 @@ io.on("connection", async socket => {
     })
 
 
+    
 
-    const sockets = await io.fetchSockets();
-    for (const socket of sockets) {
-        if(allSockets.includes(socket.currUser.username))
-            continue
-        console.log(socket.currUser.username)
-        allSockets = [...allSockets, socket.currUser.username]
-    }
-
-    io.emit("fetchOnlineUsers", allSockets);
-
-    // socket.on("fetchAllUsers", (allSockets) => {
-    //     socket.in(chatRoomName).emit("fetchAllUsers", allSockets)
-    // });
     
     socket.on("disconnect", () => {
-        socket.leave(chatRoomName);
-        socket.to(chatRoomName).emit("message", socket.currUser.username + " has disconnected")
+        socket.leave("chatRoom");
+        onlineUsers.pop(socket.currUser.username)
+        io.emit("fetchOnlineUsers", onlineUsers);
+        socket.emit("message", socket.currUser.username + " has disconnected")
     })
  });
 
