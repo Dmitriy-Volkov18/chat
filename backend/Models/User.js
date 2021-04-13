@@ -23,6 +23,16 @@ const userSchema = new mongoose.Schema({
     isAdmin: {
         type: Boolean,
         default: false
+    },
+    status: {
+        isBanned: {
+            type: Boolean,
+            default: false
+        },
+        isMuted: {
+            type: Boolean,
+            default: false
+        }
     }
 })
 

@@ -8,6 +8,8 @@ import {getUser} from "./redux/actions/userActions"
 import PrivateRoute from './components/PrivateRoute/PrivateRoute'
 import {connect} from 'react-redux'
 
+import ErrorAlert from "./components/ErrorAlert/ErrorAlert"
+
 function App({getUser}) {
   useEffect(() => {
       getUser()
@@ -17,6 +19,7 @@ function App({getUser}) {
     <div className="App">
       <Router>
         <Header />
+        {/* <ErrorAlert /> */}
         <Switch>
           <PrivateRoute exact path="/" component={Chat} />
           <Route exact path="/login" component={Login} />
