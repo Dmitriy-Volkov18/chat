@@ -1,7 +1,7 @@
 import {ISMUTED} from "../types/muteTypes"
 
 
-export const mute = (isMuted) => ({
+export const mute = (muteObj) => ({
     type: ISMUTED,
-    payload: isMuted
+    payload: muteObj
 })

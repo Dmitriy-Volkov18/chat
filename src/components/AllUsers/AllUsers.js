@@ -1,30 +1,11 @@
 import React, {useState, useEffect} from 'react'
 import {useSelector, useDispatch} from "react-redux"
-// import {getAllUsers} from "../../redux/actions/userActions"
 import {mute} from "../../redux/actions/muteActions"
 import axios from "axios"
 
-const AllUsers = ({getAllUsers, socket}) => {
-    // const allUsers = useSelector(state => state.allUsers.users)
-    // const isLoading = useSelector(state => state.allUsers.isLoading)
+const AllUsers = ({getAllUsers, socket, callback}) => {
     const token = useSelector(state => state.user.token)
-
     const [fetchAllUsers, setFetchAllUsers] = useState([])
-
-    // useEffect(() => {
-    //     getAllUsers()
-
-    //     if(!isLoading && allUsers){
-    //         socket.current.emit("fetchAllUsers", allUsers)
-    //     }
-
-    //     socket.current.on("fetchAllUsers", (users) => {
-    //         setFetchAllUsers(users)
-    //     })
-
-        
-    // }, [getAllUsers, socket, isLoading, allUsers])
-    
 
     useEffect(() => {
         const config = {
@@ -51,11 +32,6 @@ const AllUsers = ({getAllUsers, socket}) => {
         })
     })
 
-
-    const [isMuted, setIsMuted] = useState(false)
-    const dispatch = useDispatch()
-    
-
     const banUser = () => {
         console.log("banned")
     }
@@ -67,19 +43,18 @@ const AllUsers = ({getAllUsers, socket}) => {
     const muteUser = (username) => {
         socket.current.emit("muteUserUsername", username)
 
-        socket.current.on("muteUser", (trueValue) => {
-            setIsMuted(trueValue)
-            dispatch(mute(trueValue))
+        socket.current.on("muteUserUsername", (trueValue) => {
+            callback(trueValue)
         })
+
     }
 
     const unmuteUser = (username) => {
         socket.current.emit("unMuteUserUsername", username)
 
-        socket.current.on("unmuteUser", (trueValue) => {
-            setIsMuted(trueValue)
-            dispatch(mute(trueValue))
-        })
+        // socket.current.on("unmuteUser", (muteObj) => {
+        //     dispatch(mute(muteObj))
+        // })
     }
 
     return (
@@ -94,26 +69,8 @@ const AllUsers = ({getAllUsers, socket}) => {
                     ) : <h3>No users found</h3>
                 }
             </ul>
-            {isMuted ? "muted" : "no"}
         </div>
     )
 }
 
-// const mapDispatchToProps = dispatch => ({
-//     getAllUsers: () => dispatch(getAllUsers())
-// })
-
 export default AllUsers
-// export default connect(null, mapDispatchToProps)(AllUsers)
-
-
-
-
-/*
-компонент Все Юзеры не могут содержать в себе кнопки действий потому что
-1) Как мне узнать id юзера если он не подключён к чату
-
-
-
-
-*/

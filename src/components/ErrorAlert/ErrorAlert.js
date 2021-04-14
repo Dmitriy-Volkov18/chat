@@ -1,11 +1,17 @@
 import React from 'react'
+import {connect} from "react-redux"
+import "./ErrorAlert.styles.css"
 
-const ErrorAlert = () => {
-    return (
-        <div className="errorAlert">
-            <h2>Error</h2>
+const ErrorAlert = ({errors}) => errors !== null && errors.length > 0 
+    && errors.map((error, index) => (
+        <div key={index} className="errorAlert-block">
+            <p className={`errorAlert-${error.alertType}`}>{error.msg}</p>
         </div>
     )
-}
+)
 
-export default ErrorAlert
+const mapStateToProps = (state) => ({
+    errors: state.errors
+})
+
+export default connect(mapStateToProps)(ErrorAlert)

@@ -12,7 +12,7 @@ const Message = ({message, specificClass, color1, currentUser}) => {
         )
     }else{
         return (
-            <div className={`${specificClass}`} >
+            <div className="serverMessage" >
                 <p className="msgText">{message}</p>
             </div>
         )

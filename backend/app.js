@@ -6,6 +6,7 @@ const authRoute = require("./Routes/AuthRoute")
 const chatRoomRoute = require("./Routes/ChatRoom")
 const jwt = require("jsonwebtoken")
 const Message = require("./Models/Message")
+const User = require("./Models/User")
 
 const mongoose = require("mongoose")
 require("dotenv").config()
@@ -68,62 +69,27 @@ io.use(async(socket, next) => {
     }
 });
 
-let onlineUsers = []
-
-function containsObject(arr, obj){
-    const userExists = arr.some(user => user.id === obj.id)
-
-    if(userExists) {
-        console.log(userExists)
-        return true
-    }
-
-    return false
-}
-
-function removeItem(arr, obj){
-    const newArr = arr.filter(user => user.id !== obj.id)
-
-    console.log(newArr)
-}
-
 let onlineSet = new Set()
 
 
 io.on("connection", async socket => {
-    socket.to("chatRoom").emit("message", "Welcome to the chat")
-    socket.broadcast.emit("message", socket.currUser.username + " has connected to the chat");
-
     socket.on("joinRoom", (chatRoom) => {
         socket.join(chatRoom);
-        // const newOnlineUser = {
-        //     id: socket.currUser.id,
-        //     username: socket.currUser.username
-        // }
-        // if(containsObject(onlineUsers, newOnlineUser)){
-        //     io.emit("fetchOnlineUsers", onlineUsers);
-        // }else{
-        //     onlineUsers.push(newOnlineUser)
-        //     onlineUsers.map(onlineUser => onlineUser.id !== newOnlineUser.id)
-        //     io.emit("fetchOnlineUsers", onlineUsers);
-        // }
-        
-        // console.log(onlineUsers)
+
+        socket.emit("message", "Welcome to the chat")
+        socket.broadcast.to("chatRoom").emit("message", socket.currUser.username + " has connected to the chat");
+
 
         onlineSet.add(socket.currUser.username)
-        
         io.emit("fetchOnlineUsers", [...onlineSet]);
         
-        console.log(onlineSet)
-        console.log(Object.values([...onlineSet]))
+        // console.log(onlineSet)
+        // console.log(Object.values([...onlineSet]))
         console.log(socket.currUser.username + " joined the room: " + chatRoom)
     })
 
     socket.on("leaveRoom", (chatRoom) => {
         socket.leave(chatRoom);
-        // removeItem(onlineUsers, socket.currUser)
-        // io.emit("fetchOnlineUsers", onlineUsers);
-        // console.log(onlineUsers)
 
         onlineSet.delete(socket.currUser.username)
         io.emit("fetchOnlineUsers", [...onlineSet]);
@@ -151,32 +117,45 @@ io.on("connection", async socket => {
     socket.on("fetchAllUsers", (allUsers) => {
         io.emit("fetchAllUsers", allUsers)
     })
+
     
+    socket.on("muteUserUsername", (username) => {
+        // const clients = await io.fetchSockets();
 
-    socket.on("muteUserUsername", async (username) => {
-        console.log(username);
-        const clients = await io.fetchSockets();
-
-        for(let client of clients){
-            console.log('clients ', client.currUser.username );
+        // for(let client of clients){
+        //     console.log('clients ', client.currUser.username );
             
-        }
+        // }
         
 
         if(onlineSet.has(username)){
-            Object.values([...onlineSet]).forEach(user => {
-                if(user === username){
-                    io.emit("muteUser", true)
+            Object.values([...onlineSet]).forEach(async onlineUser => {
+                if(onlineUser === username){
+                    const userExist = await User.find({username})
+
+                    if(userExist){
+                        await User.updateOne({username}, { '$set': {"status.isMuted" : true} })
+                    }
+                    // const trueValue = true
+                    // io.emit("muteUser", {username, trueValue})
                 }
             })
         }
+
+        io.emit("muteUserUsername", true)
     })
 
     socket.on("unMuteUserUsername", (username) => {
         if(onlineSet.has(username)){
-            Object.values([...onlineSet]).forEach(user => {
-                if(user === username){
-                    io.emit("unmuteUser", false)
+            Object.values([...onlineSet]).forEach(async onlineUser => {
+                if(onlineUser === username){
+                    const userExist = await User.find({username})
+
+                    if(userExist){
+                        await User.updateOne({username}, { '$set': {"status.isMuted" : false} })
+                    }
+                    // const falseValue = false
+                    // io.emit("unmuteUser", {username, falseValue})
                 }
             })
         }
@@ -185,16 +164,10 @@ io.on("connection", async socket => {
     
     socket.on("disconnect", () => {
         socket.leave("chatRoom");
-        // onlineUsers.map(onlineUser => onlineUser.id === socket.currUser.id)
-
-        // for(let i = 0; i <= onlineUsers.length; i++){
-        //     console.log(onlineUsers[i])
-        // }
-        // io.emit("fetchOnlineUsers", onlineUsers);
-        // console.log(onlineUsers)
+        
         onlineSet.delete(socket.currUser.username)
         io.emit("fetchOnlineUsers", [...onlineSet]);
-        socket.emit("message", socket.currUser.username + " has disconnected")
+        io.to("chatRoom").emit("message", socket.currUser.username + " has disconnected")
     })
  });
 

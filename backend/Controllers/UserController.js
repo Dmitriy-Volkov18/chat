@@ -18,7 +18,32 @@ exports.getAllUsers = async (req, res, next) => {
             users
         })
     }catch(err){
-        res.status(500).json("Server error")
+        res.status(500).json({
+            error: "Server error"
+        })
+    }
+}
+
+
+exports.getUserByUsername = async (req, res, next) => {
+    try{
+        const user = await User.findOne({
+            username: req.params.username
+        })
+
+        if(!user){
+            return res.status(404).json({
+                message: "User not found"
+            })
+        }
+
+        res.status(200).json({
+            user
+        })
+    }catch(err){
+        res.status(500).json({
+            error: "Server error"
+        })
     }
 }
 
@@ -75,33 +100,34 @@ exports.signup = async (req, res, next) => {
     try{
         let isAdmin
         const {username, email, password} = req.body
+        let errors = []
 
 
         if(!username || !email || !password){
-            return res.status(400).json({
-                error: "Please enter all required fields"
-            })
+            errors.push({msg: "Please enter all required fields"})
         }
         
         const usernameRegex = /^[a-zA-Z0-9~@#$^*()_+=[\]{}|\\,.?: -]*$/
-        if(!usernameRegex.test(username)) return res.status(400).json({
-            error: "Username cannot contain any special characters"
-        })
+        if(!usernameRegex.test(username)) {
+            errors.push({msg: "Username cannot contain any special characters"})
+        }
 
         if(username.length < 3){
-            return res.status(400).json({
-                error: "Username is less than 3 characters"
-            })
+            errors.push({msg: "Username is less than 3 characters"})
         }
 
         const emailRegex = /gmail.com|mail.com$/
-        if(!emailRegex.test(email)) return res.status(400).json({
-            error: "Enter a correct email"
-        })
+        if(!emailRegex.test(email)) {
+            errors.push({msg: "Enter a correct email"})
+        }
 
         if(password.length < 6){
+            errors.push({msg: "Password is less than 6 characters"})
+        }
+
+        if(errors.length > 0){
             return res.status(400).json({
-                error: "Password is less than 6 characters"
+                errors
             })
         }
 

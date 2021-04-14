@@ -12,7 +12,7 @@ const middlewares = [logger, thunk]
 
 const rootReducer = combineReducers({
     user: userReducer,
-    allUsers: allUsersReducer,
+    // allUsers: allUsersReducer,
     errors: errorReducer,
     mute: muteReducer
 })

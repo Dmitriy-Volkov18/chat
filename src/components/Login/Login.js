@@ -25,9 +25,7 @@ const Login = () => {
     const onSubmit = async(e) => {
         e.preventDefault()
 
-        if(username !== "" && email !== "" && password !== ""){
-            dispatch(loginUser(formValue))
-        }
+        dispatch(loginUser(formValue))
     }
 
 
@@ -37,9 +35,9 @@ const Login = () => {
             <div className="login">
                 <h2>Login</h2>
                 <form method="post" onSubmit={(e) => onSubmit(e)}>
-                    <input type="text" name="username" value={username} onChange={(e) => onChange(e)} placeholder="Enter a username" required/>
-                    <input type="email" name="email" value={email} onChange={(e) => onChange(e)} placeholder="Enter an email" required/>
-                    <input type="password" name="password" value={password} onChange={(e) => onChange(e)} placeholder="Enter a password" required/>
+                    <input type="text" name="username" value={username} onChange={(e) => onChange(e)} placeholder="Enter a username"/>
+                    <input type="text" name="email" value={email} onChange={(e) => onChange(e)} placeholder="Enter an email"/>
+                    <input type="password" name="password" value={password} onChange={(e) => onChange(e)} placeholder="Enter a password"/>
                     <input type="submit" value="Send"/>
                 </form>
             </div>

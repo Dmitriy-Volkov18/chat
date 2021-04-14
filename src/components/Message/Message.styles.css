@@ -28,3 +28,10 @@
 .currentUser .date{
     font-size: 13px;
 }
+
+.serverMessage{
+    background-color: rgb(250, 238, 169);
+    padding: 10px;
+    margin-bottom: 5px;
+    color: rgb(83, 83, 83);
+}

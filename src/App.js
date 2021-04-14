@@ -19,7 +19,7 @@ function App({getUser}) {
     <div className="App">
       <Router>
         <Header />
-        {/* <ErrorAlert /> */}
+        <ErrorAlert />
         <Switch>
           <PrivateRoute exact path="/" component={Chat} />
           <Route exact path="/login" component={Login} />

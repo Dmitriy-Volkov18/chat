@@ -1,0 +1,19 @@
+
+.errorAlert-block{
+    width: 100%;
+    margin: 10px 0;
+    display: flex;
+    justify-content: center;
+    align-items: center;
+}
+
+.errorAlert-block p{
+    padding: 10px;
+}
+
+.errorAlert-danger{
+    background-color: rgb(250, 107, 107);
+    border-radius: 10px;
+    border-bottom: 2px solid rgb(189, 63, 63);
+    color: #fff;
+}

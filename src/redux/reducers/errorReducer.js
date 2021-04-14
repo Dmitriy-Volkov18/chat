@@ -1,13 +1,13 @@
 import errorTypes from '../types/errorTypes'
 
-const initialState = {
-    error: null
-}
+const initialState = []
 
 const errorReducer = (state = initialState, action) => {
     switch(action.type){
         case errorTypes.ERROR:
-            return {...state, error: action.payload}
+            return [...state, action.payload]
+        case errorTypes.REMOVE_ERROR:
+            return state.filter(error => error.id !== action.payload)
         default:
             return state
     }

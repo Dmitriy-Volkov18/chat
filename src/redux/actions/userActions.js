@@ -1,4 +1,5 @@
 import userTypes from '../types/userTypes'
+import {setAlert} from "./errorActions"
 import axios from "axios"
 
 
@@ -54,9 +55,17 @@ export const loginUser = (userData) => async(dispatch) => {
 
         dispatch(login_success({token, user}))
         dispatch(set_admin(admin))
-                
+        
+        
     }catch(err){
-        dispatch(login_failure(err))
+        const errors = err.response.data.errors
+        dispatch(login_failure(errors))
+
+        if(errors){
+            errors.forEach(error => {
+                dispatch(setAlert(error.msg, "danger"))
+            });
+        }
     }
 }
 

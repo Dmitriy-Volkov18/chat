@@ -25,11 +25,11 @@ const userSchema = new mongoose.Schema({
         default: false
     },
     status: {
-        isBanned: {
+        isMuted: {
             type: Boolean,
             default: false
         },
-        isMuted: {
+        isBanned: {
             type: Boolean,
             default: false
         }

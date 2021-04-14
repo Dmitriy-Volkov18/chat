@@ -1,5 +1,6 @@
 const errorTypes = {
-    ERROR: "ERROR"
+    ERROR: "ERROR",
+    REMOVE_ERROR: "REMOVE_ERROR",
 }
 
 export default errorTypes

@@ -1,13 +1,11 @@
 import {ISMUTED} from '../types/muteTypes'
 
-const initialState = {
-    isMuted: false
-}
+const initialState = {}
 
 const muteReducer = (state = initialState, action) => {
     switch(action.type){
         case ISMUTED:
-            return {...state, isMuted: action.payload}
+            return {...state, ...action.payload}
         default:
             return state
     }

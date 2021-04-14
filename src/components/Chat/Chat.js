@@ -8,7 +8,7 @@ import axios from "axios"
 
 const Chat = () => {
     const socketRef = useRef();
-    // const [messages, setMessages] = useState([])
+    const [messages, setMessages] = useState([])
     const [onlineUsers, setOnlineUsers] = useState([])
     const [newMessages, setNewMessages] = useState([])
     const [userId, setUserId] = useState("")
@@ -22,6 +22,8 @@ const Chat = () => {
 
     const chat_body_ref = useRef()
 
+    const [value, setValue] = useState(false);
+
     useEffect(() => {
         if(token){
             const payload = JSON.parse(atob(token.split(".")[1]))
@@ -31,20 +33,13 @@ const Chat = () => {
             auth: {token}
         });
 
-        // socketRef.current.on("message", (msg) => {
-        //     setMessages(m => [...m, msg])
-        // })
-
         socketRef.current.on("newMessage", (message) => {
             setNewMessages([...newMessages, message])
-            console.log(chat_body_ref)
         })
-
 
         socketRef.current.emit("joinRoom", "chatRoom")
 
         socketRef.current.on("fetchOnlineUsers", (onlineUser) => {
-            console.log(onlineUser)
             setOnlineUsers(onlineUser)
         })
 
@@ -53,6 +48,12 @@ const Chat = () => {
             socketRef.current.close()
         }
     }, [newMessages, token])
+
+    useEffect(() => {
+        socketRef.current.on("message", (msg) => {
+            setMessages(m => [...m, msg])
+        })
+    }, [])
 
 
     useEffect(() => {
@@ -85,34 +86,54 @@ const Chat = () => {
     ////////////////////////
 
 
-    const isMuted = useSelector(state => state.mute.isMuted)
-    const [mute, setMute] = useState(false)
-    
+    const payload = JSON.parse(atob(token.split(".")[1]))
+    const [mute, setMuted] = useState(false)
 
     useEffect(() => {
-        setMute(isMuted)
-        messageRef.current.disabled = isMuted
-    }, [isMuted])
+        const findUser = async () => {
+            try{
+                const config = {
+                    headers: {
+                        'Content-Type': 'application/json'
+                    }
+                }
+                
+                if(token){
+                    config.headers.authorization = token
+                    axios.defaults.headers.common['Authorization'] = token;
+                }else{
+                    return
+                }
 
+                const foundUser = await axios.get(`http://localhost:5000/api/users/${payload.username}`, config)
 
-    //////////////////////////////////
+                if(foundUser){
+                    const muteValue = foundUser.data.user.status.isMuted
+                    // socketRef.current.emit("muteUser", muteValue)
+                    
+                    socketRef.current.on("muteUserUsername", (muteValue) => {
+                        messageRef.current.disabled = muteValue
+                        setMuted(muteValue)
+                    })
+                }
+            }catch(err){
+                console.log(err.response.data.error)
+            }
+        }
+                
+        if(payload.username) findUser()
+
+    }, [value, payload.username, token])
     
-    const handleSendMessage = async (e) => {
+    const handleSendMessage = () => {
         if(messageRef.current.value === "") return
         
-        const timer = ms => new Promise(res => setTimeout(res, ms))
-        async function load() { 
-            socketRef.current.emit("chatRoomMessage", {
-                chatRoom: "chatRoom",
-                message: messageRef.current.value
-            })
+        socketRef.current.emit("chatRoomMessage", {
+            chatRoom: "chatRoom",
+            message: messageRef.current.value
+        })
 
-            messageRef.current.value = ""
-
-            await timer(3000);
-        }
-
-        load()
+        messageRef.current.value = ""
     }
 
 
@@ -129,7 +150,9 @@ const Chat = () => {
         { color: '#2C418F' }
     ]
 
-    let randomColor = Math.floor(Math.random() * colors.length)
+    let randomColor
+
+    console.log(value)
 
     return (
         <div className="chat_container">
@@ -146,9 +169,12 @@ const Chat = () => {
                         } */}
 
                         {
-                            Object.values(onlineUsers).map((onlineUser, index) => (
-                                <li key={index} style={colors[Math.floor(Math.random() * colors.length)]}>{onlineUser}</li>
-                            ))
+                            
+                            Object.values(onlineUsers).map((onlineUser, index) => {
+                                    randomColor = Math.floor(Math.random() * colors.length);
+                                    return <li key={index} style={colors[randomColor]}>{onlineUser}</li>
+                                }
+                            )
                         }
                     </ul>
                 </div>
@@ -157,12 +183,6 @@ const Chat = () => {
                     <div className="chat-header"></div>
 
                     <div className="chat-body-block" ref={chat_body_ref}>
-                        {/* {
-                            messages.map((message, index) => 
-                                (<Message key={index} message={message} />)
-                            ) 
-                        } */}
-
                         {
                             fetchedAllMessages.map((message, index) => 
                                 (<Message key={index} message={message} specificClass={userId.id === message.userCreated ? "currentUser" : "anotherUser"} currentUser={userId.id === message.userCreated ? true : false} color1={colors[Math.floor(Math.random() * colors.length)]} />)
@@ -170,27 +190,41 @@ const Chat = () => {
                         }
 
                         {
-                            newMessages.map((message, index) => 
-                                (<Message key={index} message={message} specificClass={userId.id === message.userId ? "currentUser" : "anotherUser"} currentUser={userId.id === message.userId ? true : false} color1={colors[Math.floor(Math.random() * colors.length)]} />)
+                            newMessages.map((message, index) => {
+                                    randomColor = Math.floor(Math.random() * colors.length);
+                                    return <Message key={index} message={message} specificClass={userId.id === message.userId ? "currentUser" : "anotherUser"} currentUser={userId.id === message.userId ? true : false} color1={colors[randomColor]} />
+                                }
+                            ) 
+                        }
+
+                        {
+                            messages.map((message, index) => 
+                                (<Message key={index} message={message} />)
                             ) 
                         }
 
                     </div>
 
                     <div className="form-block">
-                        <textarea name="userMessage" ref={messageRef} placeholder={`${mute ? "You`ve been muted" : "Type a message 1 to 200 characters"}`} disabled={mute} />
-                        <button onClick={(e) => handleSendMessage(e)}>Send</button> 
+                        <textarea name="userMessage" ref={messageRef} placeholder={`${value ? "You`ve been muted" : "Type a message 1 to 200 characters"}`} disabled={value} />
+                        <button onClick={handleSendMessage}>Send</button> 
                     </div>
                 </div>
 
                 {
-                    isAdmin && (<AllUsers socket={socketRef} />)
+                    isAdmin && (<AllUsers callback={setValue} socket={socketRef} />)
                 }
             </div>
         </div>
     )
 }
 
-
-
 export default Chat
+
+
+/*  
+2) сделать отправку сообщений через каждые 15 секунд
+3) доделать рандомные цвета
+4) записывать состояние для мута и анмута
+5) сделать функционал бана
+*/
