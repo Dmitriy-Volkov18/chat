@@ -22,7 +22,6 @@ const Chat = () => {
 
     const chat_body_ref = useRef()
 
-    const [value, setValue] = useState(false);
 
     useEffect(() => {
         if(token){
@@ -88,6 +87,12 @@ const Chat = () => {
 
     const payload = JSON.parse(atob(token.split(".")[1]))
     const [mute, setMuted] = useState(false)
+    const [value, setValue] = useState(false);
+
+    // useEffect(() => {
+        
+    // })
+
 
     useEffect(() => {
         const findUser = async () => {
@@ -111,10 +116,11 @@ const Chat = () => {
                     const muteValue = foundUser.data.user.status.isMuted
                     // socketRef.current.emit("muteUser", muteValue)
                     
-                    socketRef.current.on("muteUserUsername", (muteValue) => {
-                        messageRef.current.disabled = muteValue
-                        setMuted(muteValue)
-                    })
+                    // socketRef.current.on("muteUserUsername", (muteValueq) => {
+                        
+                    // })
+                    messageRef.current.disabled = muteValue
+                    setMuted(muteValue)
                 }
             }catch(err){
                 console.log(err.response.data.error)
@@ -123,7 +129,7 @@ const Chat = () => {
                 
         if(payload.username) findUser()
 
-    }, [value, payload.username, token])
+    }, [payload.username, token])
     
     const handleSendMessage = () => {
         if(messageRef.current.value === "") return
@@ -206,7 +212,7 @@ const Chat = () => {
                     </div>
 
                     <div className="form-block">
-                        <textarea name="userMessage" ref={messageRef} placeholder={`${value ? "You`ve been muted" : "Type a message 1 to 200 characters"}`} disabled={value} />
+                        <textarea name="userMessage" ref={messageRef} placeholder={`${mute ? "You`ve been muted" : "Type a message 1 to 200 characters"}`} disabled={mute} />
                         <button onClick={handleSendMessage}>Send</button> 
                     </div>
                 </div>

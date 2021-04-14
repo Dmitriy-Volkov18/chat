@@ -170,7 +170,7 @@ h1{
 
     /* .online-users-container,
     .allUsers-container{
-        
+        flex: 2;
     } */
 
     .online-users-container{

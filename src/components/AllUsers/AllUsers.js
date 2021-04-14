@@ -43,9 +43,9 @@ const AllUsers = ({getAllUsers, socket, callback}) => {
     const muteUser = (username) => {
         socket.current.emit("muteUserUsername", username)
 
-        socket.current.on("muteUserUsername", (trueValue) => {
-            callback(trueValue)
-        })
+        // socket.current.on("muteUserUsername", (trueValue) => {
+        //     callback(trueValue)
+        // })
 
     }
 

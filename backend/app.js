@@ -119,7 +119,7 @@ io.on("connection", async socket => {
     })
 
     
-    socket.on("muteUserUsername", (username) => {
+    socket.on("muteUserUsername", async (username) => {
         // const clients = await io.fetchSockets();
 
         // for(let client of clients){
@@ -131,7 +131,7 @@ io.on("connection", async socket => {
         if(onlineSet.has(username)){
             Object.values([...onlineSet]).forEach(async onlineUser => {
                 if(onlineUser === username){
-                    const userExist = await User.find({username})
+                    const userExist = await User.findOne({username})
 
                     if(userExist){
                         await User.updateOne({username}, { '$set': {"status.isMuted" : true} })
@@ -142,7 +142,8 @@ io.on("connection", async socket => {
             })
         }
 
-        io.emit("muteUserUsername", true)
+        const usr = await User.find({username})
+        io.emit("muteUserUsername", usr[0].status.isMuted)
     })
 
     socket.on("unMuteUserUsername", (username) => {
