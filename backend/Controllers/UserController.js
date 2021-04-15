@@ -47,6 +47,28 @@ exports.getUserByUsername = async (req, res, next) => {
     }
 }
 
+exports.getBannedUser = async (req, res, next) => {
+    try{
+        const user = await User.findOne({
+            username: req.params.username
+        })
+
+        if(!user){
+            return res.status(404).json({
+                message: "User not found"
+            })
+        }
+
+        res.status(200).json({
+            banned: user.status.isBanned
+        })
+    }catch(err){
+        res.status(500).json({
+            error: "Server error"
+        })
+    }
+}
+
 const createToken = (user) => {
     const token = jwt.sign({
         id: user._id,
@@ -87,7 +109,8 @@ const register = async (res, username, email, password, isAdmin) => {
         return res.status(201).json({
             token: token,
             user: newUser,
-            isAdmin: savedUser.isAdmin
+            isAdmin: savedUser.isAdmin,
+            isBanned: savedUser.status.isBanned
         })
     }catch(err){
         res.status(500).json({
@@ -165,7 +188,8 @@ exports.signup = async (req, res, next) => {
                 return res.status(201).json({
                     token: token,
                     user: user,
-                    isAdmin: existingUser.isAdmin
+                    isAdmin: existingUser.isAdmin,
+                    isBanned: existingUser.status.isBanned
                 })
             }
         }

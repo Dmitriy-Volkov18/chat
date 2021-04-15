@@ -71,6 +71,57 @@ io.use(async(socket, next) => {
 
 let onlineSet = new Set()
 
+const banHandler = async(username, banAction) => {
+    const clients = await io.fetchSockets();
+
+    for(let client of clients){
+        if(client.currUser.username === username){
+            if(onlineSet.has(username)){
+                Object.values([...onlineSet]).forEach(async onlineUser => {
+                    const userExist = await User.find({username})
+
+                    if(userExist){
+                        console.log(userExist)
+                        if(banAction === "ban"){
+                            await User.updateOne({username}, { '$set': {"status.isBanned" : true} })
+
+                            const userExist2 = await User.find({username})
+
+                            io.emit("banUser", userExist2[0].status.isBanned)
+                            console.log(userExist2[0].status.isBanned)
+
+                            onlineSet.delete(client.currUser.username)
+                            client.disconnect(true)
+                            io.emit("fetchOnlineUsers", [...onlineSet]);
+
+                            console.log(onlineSet)
+                            console.log(Object.values([...onlineSet]))
+                        }else{
+                            await User.updateOne({username}, { '$set': {"status.isBanned" : false} })
+
+                            const userExist2 = await User.find({username})
+
+                            io.emit("banUser", userExist2[0].status.isBanned)
+                            console.log(userExist2[0].status.isBanned)
+
+                            onlineSet.delete(client.currUser.username)
+                            client.disconnect(true)
+                            io.emit("fetchOnlineUsers", [...onlineSet]);
+
+                            console.log(onlineSet)
+                            console.log(Object.values([...onlineSet]))
+                        }
+                    }
+
+
+                })
+            }
+        }else{
+            console.log("Not that user")
+        }
+    }
+}
+
 
 io.on("connection", async socket => {
     socket.on("joinRoom", (chatRoom) => {
@@ -83,8 +134,8 @@ io.on("connection", async socket => {
         onlineSet.add(socket.currUser.username)
         io.emit("fetchOnlineUsers", [...onlineSet]);
         
-        // console.log(onlineSet)
-        // console.log(Object.values([...onlineSet]))
+        console.log(onlineSet)
+        console.log(Object.values([...onlineSet]))
         console.log(socket.currUser.username + " joined the room: " + chatRoom)
     })
 
@@ -114,20 +165,13 @@ io.on("connection", async socket => {
         await newMessage.save()
     })
 
-    socket.on("fetchAllUsers", (allUsers) => {
-        io.emit("fetchAllUsers", allUsers)
+    socket.on("fetchAllUsers", async () => {
+        const users = await User.find({})
+        io.emit("fetchAllUsers", users)
     })
 
     
     socket.on("muteUserUsername", async (username) => {
-        // const clients = await io.fetchSockets();
-
-        // for(let client of clients){
-        //     console.log('clients ', client.currUser.username );
-            
-        // }
-        
-
         if(onlineSet.has(username)){
             Object.values([...onlineSet]).forEach(async onlineUser => {
                 if(onlineUser === username){
@@ -136,8 +180,6 @@ io.on("connection", async socket => {
                     if(userExist){
                         await User.updateOne({username}, { '$set': {"status.isMuted" : true} })
                     }
-                    // const trueValue = true
-                    // io.emit("muteUser", {username, trueValue})
                 }
             })
         }
@@ -146,7 +188,7 @@ io.on("connection", async socket => {
         io.emit("muteUserUsername", usr[0].status.isMuted)
     })
 
-    socket.on("unMuteUserUsername", (username) => {
+    socket.on("unMuteUserUsername", async (username) => {
         if(onlineSet.has(username)){
             Object.values([...onlineSet]).forEach(async onlineUser => {
                 if(onlineUser === username){
@@ -155,11 +197,21 @@ io.on("connection", async socket => {
                     if(userExist){
                         await User.updateOne({username}, { '$set': {"status.isMuted" : false} })
                     }
-                    // const falseValue = false
-                    // io.emit("unmuteUser", {username, falseValue})
                 }
             })
         }
+
+        const usr = await User.find({username})
+        io.emit("unMuteUserUsername", usr[0].status.isMuted)
+    })
+
+
+    socket.on("banUser", async (username) => {
+        banHandler(username, "ban")
+    })
+
+    socket.on("unBanUser", (username) => {
+        banHandler(username, "unBan")
     })
 
     

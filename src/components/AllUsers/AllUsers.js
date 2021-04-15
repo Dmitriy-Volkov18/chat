@@ -1,9 +1,8 @@
 import React, {useState, useEffect} from 'react'
-import {useSelector, useDispatch} from "react-redux"
-import {mute} from "../../redux/actions/muteActions"
+import {useSelector} from "react-redux"
 import axios from "axios"
 
-const AllUsers = ({getAllUsers, socket, callback}) => {
+const AllUsers = ({socket}) => {
     const token = useSelector(state => state.user.token)
     const [fetchAllUsers, setFetchAllUsers] = useState([])
 
@@ -42,19 +41,10 @@ const AllUsers = ({getAllUsers, socket, callback}) => {
 
     const muteUser = (username) => {
         socket.current.emit("muteUserUsername", username)
-
-        // socket.current.on("muteUserUsername", (trueValue) => {
-        //     callback(trueValue)
-        // })
-
     }
 
     const unmuteUser = (username) => {
         socket.current.emit("unMuteUserUsername", username)
-
-        // socket.current.on("unmuteUser", (muteObj) => {
-        //     dispatch(mute(muteObj))
-        // })
     }
 
     return (

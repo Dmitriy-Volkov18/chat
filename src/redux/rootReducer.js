@@ -1,6 +1,5 @@
 import {combineReducers, applyMiddleware, createStore} from 'redux'
 import userReducer from "./reducers/userReducer"
-import allUsersReducer from "./reducers/allUsersReducer"
 import errorReducer from "./reducers/errorReducer"
 import muteReducer from "./reducers/muteReducer"
 
@@ -12,7 +11,6 @@ const middlewares = [logger, thunk]
 
 const rootReducer = combineReducers({
     user: userReducer,
-    // allUsers: allUsersReducer,
     errors: errorReducer,
     mute: muteReducer
 })

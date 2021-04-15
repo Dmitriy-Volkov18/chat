@@ -1,10 +1,27 @@
 import React, {useState, useEffect, useRef} from 'react'
 import { io } from "socket.io-client";
 import Message from '../Message/Message'
-import AllUsers from '../AllUsers/AllUsers'
+import AllUsers from '../AllUsersCopy/AllUsers'
 import "./Chat.styles.css"
 import {useSelector} from "react-redux"
 import axios from "axios"
+import {useDispatch} from "react-redux"
+import {logout} from "../../redux/actions/userActions"
+
+const colors = [
+    { color: '#61FF4F' },
+    { color: '#F5EE4C' },
+    { color: '#4CF5AB' },
+    { color: '#FF4FDF' },
+    { color: '#8C414F' },
+    { color: '#418C6D' },
+    { color: '#4CD8F5' },
+    { color: '#F55343' },
+    { color: '#F61D19' },
+    { color: '#2C418F' }
+]
+
+let randomColor = Math.floor(Math.random() * colors.length);
 
 const Chat = () => {
     const socketRef = useRef();
@@ -22,6 +39,9 @@ const Chat = () => {
 
     const chat_body_ref = useRef()
 
+
+    const isBannedRef = useRef()
+    const dispatch = useDispatch()
 
     useEffect(() => {
         if(token){
@@ -87,10 +107,17 @@ const Chat = () => {
 
     const payload = JSON.parse(atob(token.split(".")[1]))
     const [mute, setMuted] = useState(false)
-    const [value, setValue] = useState(false);
 
     // useEffect(() => {
-        
+    //     socketRef.current.on("muteUserUsername", (muteValueq) => {
+    //         messageRef.current.disabled = muteValueq
+    //         setMuted(muteValueq)
+    //     })
+
+    //     socketRef.current.on("unMuteUserUsername", (muteValueq) => {
+    //         messageRef.current.disabled = muteValueq
+    //         setMuted(muteValueq)
+    //     })
     // })
 
 
@@ -130,6 +157,20 @@ const Chat = () => {
         if(payload.username) findUser()
 
     }, [payload.username, token])
+
+
+
+    useEffect(() => {
+        socketRef.current.on("banUser", (isBanned) => {
+            isBannedRef.current = isBanned
+            console.log(isBannedRef.current)
+            if(isBannedRef.current){
+                dispatch(logout())
+            }
+        })
+    }, [])
+
+
     
     const handleSendMessage = () => {
         if(messageRef.current.value === "") return
@@ -143,41 +184,19 @@ const Chat = () => {
     }
 
 
-    const colors = [
-        { color: '#61FF4F' },
-        { color: '#F5EE4C' },
-        { color: '#4CF5AB' },
-        { color: '#FF4FDF' },
-        { color: '#8C414F' },
-        { color: '#418C6D' },
-        { color: '#4CD8F5' },
-        { color: '#F55343' },
-        { color: '#F61D19' },
-        { color: '#2C418F' }
-    ]
 
-    let randomColor
-
-    console.log(value)
 
     return (
-        <div className="chat_container">
+        
+            <div className="chat_container">
             <h1>Welcome to the chat</h1>
             
             <div className="chat-ui">
                 <div className="online-users-container">
                     <h2>Online users</h2>
                     <ul>
-                        {/* {
-                            onlineUsers.map((onlineUser, index) => (
-                                <li key={index} style={colors[Math.floor(Math.random() * colors.length)]}>{onlineUser.username}</li>
-                            ))
-                        } */}
-
                         {
-                            
                             Object.values(onlineUsers).map((onlineUser, index) => {
-                                    randomColor = Math.floor(Math.random() * colors.length);
                                     return <li key={index} style={colors[randomColor]}>{onlineUser}</li>
                                 }
                             )
@@ -194,43 +213,40 @@ const Chat = () => {
                                 (<Message key={index} message={message} specificClass={userId.id === message.userCreated ? "currentUser" : "anotherUser"} currentUser={userId.id === message.userCreated ? true : false} color1={colors[Math.floor(Math.random() * colors.length)]} />)
                             ) 
                         }
-
-                        {
-                            newMessages.map((message, index) => {
-                                    randomColor = Math.floor(Math.random() * colors.length);
-                                    return <Message key={index} message={message} specificClass={userId.id === message.userId ? "currentUser" : "anotherUser"} currentUser={userId.id === message.userId ? true : false} color1={colors[randomColor]} />
-                                }
-                            ) 
-                        }
-
                         {
                             messages.map((message, index) => 
                                 (<Message key={index} message={message} />)
                             ) 
                         }
-
+                        {
+                            newMessages.map((message, index) => {
+                                    return <Message key={index} message={message} specificClass={userId.id === message.userId ? "currentUser" : "anotherUser"} currentUser={userId.id === message.userId ? true : false} color1={colors[randomColor]} />
+                                }
+                            ) 
+                        }
                     </div>
 
                     <div className="form-block">
-                        <textarea name="userMessage" ref={messageRef} placeholder={`${mute ? "You`ve been muted" : "Type a message 1 to 200 characters"}`} disabled={mute} />
+                        <textarea name="userMessage" ref={messageRef} placeholder={`${mute ? "You`ve been muted" : "Type a message 1 to 200 characters"}`}/>
                         <button onClick={handleSendMessage}>Send</button> 
                     </div>
                 </div>
 
                 {
-                    isAdmin && (<AllUsers callback={setValue} socket={socketRef} />)
+                    isAdmin && (<AllUsers socket={socketRef.current} />)
                 }
             </div>
         </div>
+        
+        
     )
 }
 
 export default Chat
 
+// ОСТАЛОСЬ СДЕЛААААААААААААААААТЬЬЬЬЬЬЬЬЬЬ
 
 /*  
 2) сделать отправку сообщений через каждые 15 секунд
 3) доделать рандомные цвета
-4) записывать состояние для мута и анмута
-5) сделать функционал бана
 */

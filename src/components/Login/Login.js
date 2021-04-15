@@ -2,7 +2,6 @@ import React, {useState} from 'react'
 import {useDispatch, useSelector} from "react-redux"
 import {Redirect} from "react-router-dom"
 import {loginUser} from "../../redux/actions/userActions"
-
 import "./Login.styles.css"
 
 const Login = () => {
@@ -14,6 +13,7 @@ const Login = () => {
 
     const dispatch = useDispatch()
     const currentUser = useSelector(state => state.user.currentUser)
+
 
     const {username, email, password} = formValue
 
@@ -27,7 +27,6 @@ const Login = () => {
 
         dispatch(loginUser(formValue))
     }
-
 
     return (
         currentUser ? (<Redirect to="/" />) : 

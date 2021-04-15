@@ -52,9 +52,17 @@ export const loginUser = (userData) => async(dispatch) => {
         const user = data.user
         const admin = data.isAdmin
         const token = data.token
+        const isBanned = data.isBanned
 
-        dispatch(login_success({token, user}))
-        dispatch(set_admin(admin))
+        if(!isBanned){
+            dispatch(login_success({token, user}))
+            dispatch(set_admin(admin))
+        }else{
+            ["You are banned!)):D:D:p"].forEach(error => {
+                dispatch(setAlert(error, "danger"))
+            });
+        }
+   
         
         
     }catch(err){
