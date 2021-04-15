@@ -9,7 +9,6 @@ import {useDispatch} from "react-redux"
 import {logout} from "../../redux/actions/userActions"
 import colors from "../../colors"
 
-
 let randomColor = Math.floor(Math.random() * colors.length);
 
 const Chat = () => {
@@ -27,7 +26,6 @@ const Chat = () => {
     const [fetchedAllMessages, setFetchedAllMessages] = useState([])
 
     const chat_body_ref = useRef()
-
 
     const isBannedRef = useRef()
     const dispatch = useDispatch()
@@ -69,7 +67,6 @@ const Chat = () => {
         })
     }, [])
 
-
     useEffect(() => {
         const asyncFetchMessages = async() => {
             const config = {
@@ -96,9 +93,6 @@ const Chat = () => {
     useEffect(() => {
         chat_body_ref.current.scrollTop = chat_body_ref.current.scrollHeight
     })
-
-    ////////////////////////
-
 
     const payload = JSON.parse(atob(token.split(".")[1]))
     const [mute, setMuted] = useState(false)
@@ -153,8 +147,6 @@ const Chat = () => {
 
     }, [payload.username, token])
 
-
-
     useEffect(() => {
         socketRef.current.on("banUser", (isBanned) => {
             isBannedRef.current = isBanned
@@ -165,41 +157,39 @@ const Chat = () => {
         })
     }, [])
 
-
-    
     const handleSendMessage = () => {
-        setTimeout(() => {
-            if(messageRef.current.value === "") return
+        if(messageRef.current.value === "") return
 
+        if(lastMessage?.current?.date){
+            if(new Date(lastMessage.current.date).getTime() > new Date(lastMessage.current.date).getTime() + 15000){
+                socketRef.current.emit("chatRoomMessage", {
+                    chatRoom: "chatRoom",
+                    message: messageRef.current.value
+                })
+    
+                messageRef.current.value = ""
+            }else{
+                setTimeout(() => {
+                    socketRef.current.emit("chatRoomMessage", {
+                        chatRoom: "chatRoom",
+                        message: messageRef.current.value
+                    })
+
+                    messageRef.current.value = ""
+                }, 15000)
+            }
+        }else{
             socketRef.current.emit("chatRoomMessage", {
                 chatRoom: "chatRoom",
                 message: messageRef.current.value
             })
-
+    
             messageRef.current.value = ""
-        }, 15000)
-
-        // console.log(lastMessage.current)
-
-        // if(lastMessage.current){
-        //     if(new Date(lastMessage.current.date).getTime() > new Date(lastMessage.current.date).getTime() + 15000){
-        //         socketRef.current.emit("chatRoomMessage", {
-        //             chatRoom: "chatRoom",
-        //             message: messageRef.current.value
-        //         })
-        
-        //         messageRef.current.value = ""
-        //         console.log("more")
-        //     }else{
-        //         console.log("less")
-        //     }
-        // }
+        }
     }
 
-
     return (
-        
-            <div className="chat_container">
+        <div className="chat_container">
             <h1>Welcome to the chat</h1>
             
             <div className="chat-ui">
@@ -238,7 +228,7 @@ const Chat = () => {
                     </div>
 
                     <div className="form-block">
-                        <textarea name="userMessage" ref={messageRef} placeholder={`${mute ? "You`ve been muted" : "Type a message 1 to 200 characters"}`}/>
+                        <textarea name="userMessage" ref={messageRef} placeholder={`${mute ? "You`ve been muted" : "Type a message 1 to 200 characters, 1 msg in 15 secs"}`}/>
                         <button onClick={handleSendMessage}>Send</button> 
                     </div>
                 </div>
@@ -248,16 +238,7 @@ const Chat = () => {
                 }
             </div>
         </div>
-        
-        
     )
 }
 
 export default Chat
-
-// ОСТАЛОСЬ СДЕЛАТЬ
-
-/*  
-2) сделать отправку сообщений через каждые 15 секунд
-3) доделать рандомные цвета
-*/
