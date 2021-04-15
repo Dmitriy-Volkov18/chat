@@ -101,12 +101,8 @@ const banHandler = async(username, banAction) => {
 
                             const userExist2 = await User.find({username})
 
-                            io.emit("banUser", userExist2[0].status.isBanned)
+                            io.emit("unBanUser", userExist2[0].status.isBanned)
                             console.log(userExist2[0].status.isBanned)
-
-                            onlineSet.delete(client.currUser.username)
-                            client.disconnect(true)
-                            io.emit("fetchOnlineUsers", [...onlineSet]);
 
                             console.log(onlineSet)
                             console.log(Object.values([...onlineSet]))

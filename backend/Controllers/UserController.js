@@ -169,11 +169,15 @@ exports.signup = async (req, res, next) => {
                 isAdmin = false
                 register(res, username, email, password, isAdmin)
             }else{
-                const match = checkPasswords(password, existingUser.hashedPassword)
+                const match = await checkPasswords2(password, existingUser.hashedPassword)
 
                 if(!match){
+                    errors.push({msg: "Passwords does not match"})
+                }
+
+                if(errors.length > 0){
                     return res.status(400).json({
-                        error: "Password does not match"
+                        errors
                     })
                 }
 
@@ -200,9 +204,20 @@ exports.signup = async (req, res, next) => {
     }
 }
 
-async function checkPasswords(password, hashedPassword){
-    const match = bcrypt.compare(password, hashedPassword)
-    return match
+// async function checkPasswords(password, hashedPassword){
+//     const match = bcrypt.compare(password, hashedPassword)
+//     return match
+// }
+
+
+function checkPasswords2(password, hashedPassword){
+    return new Promise((resolve, reject) => {
+        bcrypt.compare(password, hashedPassword, (err, res) => {
+            if(err) reject(err)
+
+            resolve(res)
+        })
+    })
 }
 
 exports.createMessage = async (req, res, next) => {

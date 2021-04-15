@@ -7,19 +7,8 @@ import {useSelector} from "react-redux"
 import axios from "axios"
 import {useDispatch} from "react-redux"
 import {logout} from "../../redux/actions/userActions"
+import colors from "../../colors"
 
-const colors = [
-    { color: '#61FF4F' },
-    { color: '#F5EE4C' },
-    { color: '#4CF5AB' },
-    { color: '#FF4FDF' },
-    { color: '#8C414F' },
-    { color: '#418C6D' },
-    { color: '#4CD8F5' },
-    { color: '#F55343' },
-    { color: '#F61D19' },
-    { color: '#2C418F' }
-]
 
 let randomColor = Math.floor(Math.random() * colors.length);
 
@@ -43,6 +32,11 @@ const Chat = () => {
     const isBannedRef = useRef()
     const dispatch = useDispatch()
 
+    const colorsRef = useRef()
+    colorsRef.current = colors
+
+    const lastMessage = useRef()
+
     useEffect(() => {
         if(token){
             const payload = JSON.parse(atob(token.split(".")[1]))
@@ -54,6 +48,7 @@ const Chat = () => {
 
         socketRef.current.on("newMessage", (message) => {
             setNewMessages([...newMessages, message])
+            lastMessage.current = message
         })
 
         socketRef.current.emit("joinRoom", "chatRoom")
@@ -174,16 +169,30 @@ const Chat = () => {
     
     const handleSendMessage = () => {
         if(messageRef.current.value === "") return
-        
+
         socketRef.current.emit("chatRoomMessage", {
             chatRoom: "chatRoom",
             message: messageRef.current.value
         })
 
         messageRef.current.value = ""
+
+        // console.log(lastMessage.current)
+
+        // if(lastMessage.current){
+        //     if(new Date(lastMessage.current.date).getTime() > new Date(lastMessage.current.date).getTime() + 15000){
+        //         socketRef.current.emit("chatRoomMessage", {
+        //             chatRoom: "chatRoom",
+        //             message: messageRef.current.value
+        //         })
+        
+        //         messageRef.current.value = ""
+        //         console.log("more")
+        //     }else{
+        //         console.log("less")
+        //     }
+        // }
     }
-
-
 
 
     return (
@@ -197,7 +206,7 @@ const Chat = () => {
                     <ul>
                         {
                             Object.values(onlineUsers).map((onlineUser, index) => {
-                                    return <li key={index} style={colors[randomColor]}>{onlineUser}</li>
+                                    return <li key={index} style={colorsRef.current[randomColor]}>{onlineUser}</li>
                                 }
                             )
                         }
@@ -210,7 +219,7 @@ const Chat = () => {
                     <div className="chat-body-block" ref={chat_body_ref}>
                         {
                             fetchedAllMessages.map((message, index) => 
-                                (<Message key={index} message={message} specificClass={userId.id === message.userCreated ? "currentUser" : "anotherUser"} currentUser={userId.id === message.userCreated ? true : false} color1={colors[Math.floor(Math.random() * colors.length)]} />)
+                                (<Message key={index} message={message} specificClass={userId.id === message.userCreated ? "currentUser" : "anotherUser"} currentUser={userId.id === message.userCreated ? true : false} color1={colorsRef.current[Math.floor(Math.random() * colors.length)]} />)
                             ) 
                         }
                         {
@@ -220,7 +229,7 @@ const Chat = () => {
                         }
                         {
                             newMessages.map((message, index) => {
-                                    return <Message key={index} message={message} specificClass={userId.id === message.userId ? "currentUser" : "anotherUser"} currentUser={userId.id === message.userId ? true : false} color1={colors[randomColor]} />
+                                    return <Message key={index} message={message} specificClass={userId.id === message.userId ? "currentUser" : "anotherUser"} currentUser={userId.id === message.userId ? true : false} color1={colorsRef.current[randomColor]} />
                                 }
                             ) 
                         }
@@ -244,7 +253,7 @@ const Chat = () => {
 
 export default Chat
 
-// ОСТАЛОСЬ СДЕЛААААААААААААААААТЬЬЬЬЬЬЬЬЬЬ
+// ОСТАЛОСЬ СДЕЛАТЬ
 
 /*  
 2) сделать отправку сообщений через каждые 15 секунд
