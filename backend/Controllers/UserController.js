@@ -172,7 +172,7 @@ exports.signup = async (req, res, next) => {
                 const match = await checkPasswords2(password, existingUser.hashedPassword)
 
                 if(!match){
-                    errors.push({msg: "Passwords does not match"})
+                    errors.push({msg: "Incorrect password"})
                 }
 
                 if(errors.length > 0){
