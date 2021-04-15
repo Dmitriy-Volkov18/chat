@@ -168,14 +168,16 @@ const Chat = () => {
 
     
     const handleSendMessage = () => {
-        if(messageRef.current.value === "") return
+        setTimeout(() => {
+            if(messageRef.current.value === "") return
 
-        socketRef.current.emit("chatRoomMessage", {
-            chatRoom: "chatRoom",
-            message: messageRef.current.value
-        })
+            socketRef.current.emit("chatRoomMessage", {
+                chatRoom: "chatRoom",
+                message: messageRef.current.value
+            })
 
-        messageRef.current.value = ""
+            messageRef.current.value = ""
+        }, 15000)
 
         // console.log(lastMessage.current)
 
