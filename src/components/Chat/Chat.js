@@ -55,6 +55,10 @@ const Chat = () => {
             setOnlineUsers(onlineUser)
         })
 
+        socketRef.current.on("disconnect", () => {
+            dispatch(logout())
+        })
+
         return () => {
             socketRef.current.emit("leaveRoom", "chatRoom")
             socketRef.current.close()
@@ -109,6 +113,14 @@ const Chat = () => {
     //     })
     // })
 
+    function getRandomColor() {
+        var letters = '0123456789ABCDEF';
+        var color = '#';
+        for (var i = 0; i < 6; i++) {
+          color += letters[Math.floor(Math.random() * 16)];
+        }
+        return color;
+      }
 
     useEffect(() => {
         const findUser = async () => {
@@ -151,42 +163,39 @@ const Chat = () => {
         socketRef.current.on("banUser", (isBanned) => {
             isBannedRef.current = isBanned
             console.log(isBannedRef.current)
-            if(isBannedRef.current){
-                dispatch(logout())
-            }
+            // if(isBannedRef.current){
+            //     dispatch(logout())
+            // }
         })
     }, [])
+
+    const emitMessage = () => {
+        socketRef.current.emit("chatRoomMessage", {
+            chatRoom: "chatRoom",
+            message: messageRef.current.value
+        })
+
+        messageRef.current.value = ""
+    }
 
     const handleSendMessage = () => {
         if(messageRef.current.value === "") return
 
         if(lastMessage?.current?.date){
-            if(new Date(lastMessage.current.date).getTime() > new Date(lastMessage.current.date).getTime() + 15000){
-                socketRef.current.emit("chatRoomMessage", {
-                    chatRoom: "chatRoom",
-                    message: messageRef.current.value
-                })
-    
-                messageRef.current.value = ""
+            if(new Date(lastMessage.current.date).getTime() > new Date(lastMessage.current.date).getTime() + 5000){
+                emitMessage()
             }else{
                 setTimeout(() => {
-                    socketRef.current.emit("chatRoomMessage", {
-                        chatRoom: "chatRoom",
-                        message: messageRef.current.value
-                    })
-
-                    messageRef.current.value = ""
-                }, 15000)
+                    emitMessage()
+                }, 5000)
             }
         }else{
-            socketRef.current.emit("chatRoomMessage", {
-                chatRoom: "chatRoom",
-                message: messageRef.current.value
-            })
-    
-            messageRef.current.value = ""
+            emitMessage()
         }
     }
+
+    let assignColor = getRandomColor()
+    let newName
 
     return (
         <div className="chat_container">
@@ -198,7 +207,13 @@ const Chat = () => {
                     <ul>
                         {
                             Object.values(onlineUsers).map((onlineUser, index) => {
-                                    return <li key={index} style={colorsRef.current[randomColor]}>{onlineUser}</li>
+                                    newName = onlineUser
+                                    if(onlineUser !== newName){
+                                        return <li key={index} style={{color:getRandomColor()}}>{onlineUser}</li> 
+
+                                    }else{
+                                        return <li key={index} style={{color:assignColor}}>{onlineUser}</li> 
+                                    }
                                 }
                             )
                         }
@@ -211,7 +226,11 @@ const Chat = () => {
                     <div className="chat-body-block" ref={chat_body_ref}>
                         {
                             fetchedAllMessages.map((message, index) => 
-                                (<Message key={index} message={message} specificClass={userId.id === message.userCreated ? "currentUser" : "anotherUser"} currentUser={userId.id === message.userCreated ? true : false} color1={colorsRef.current[Math.floor(Math.random() * colors.length)]} />)
+                                (<Message key={index} message={message}
+                                    specificClass={userId.id === message.userCreated ? "currentUser" : "anotherUser"}
+                                    currentUser={userId.id === message.userCreated ? true : false}
+                                    color1={{color:getRandomColor()}}
+                                />)
                             ) 
                         }
                         {
@@ -221,7 +240,12 @@ const Chat = () => {
                         }
                         {
                             newMessages.map((message, index) => {
-                                    return <Message key={index} message={message} specificClass={userId.id === message.userId ? "currentUser" : "anotherUser"} currentUser={userId.id === message.userId ? true : false} color1={colorsRef.current[randomColor]} />
+                                    return <Message
+                                        key={index} message={message}
+                                        specificClass={userId.id === message.userId ? "currentUser" : "anotherUser"}
+                                        currentUser={userId.id === message.userId ? true : false}
+                                        color1={colorsRef.current[randomColor]}
+                                    />
                                 }
                             ) 
                         }

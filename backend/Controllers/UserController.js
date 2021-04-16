@@ -204,12 +204,6 @@ exports.signup = async (req, res, next) => {
     }
 }
 
-// async function checkPasswords(password, hashedPassword){
-//     const match = bcrypt.compare(password, hashedPassword)
-//     return match
-// }
-
-
 function checkPasswords2(password, hashedPassword){
     return new Promise((resolve, reject) => {
         bcrypt.compare(password, hashedPassword, (err, res) => {

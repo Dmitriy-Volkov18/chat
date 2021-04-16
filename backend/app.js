@@ -14,7 +14,7 @@ require("dotenv").config()
 
 const mongooseConnection = async() => {
     try{
-        await mongoose.connect(`mongodb+srv://dima:iiaw85lpMmxQHrYb@cluster0.tx7h4.mongodb.net/testChat?retryWrites=true&w=majority`, {
+        await mongoose.connect(process.env.MONGODBURL, {
             useCreateIndex: true,
             useNewUrlParser: true,
             useUnifiedTopology: true
@@ -71,54 +71,6 @@ io.use(async(socket, next) => {
 
 let onlineSet = new Set()
 
-const banHandler = async(username, banAction) => {
-    const clients = await io.fetchSockets();
-
-    for(let client of clients){
-        if(client.currUser.username === username){
-            if(onlineSet.has(username)){
-                Object.values([...onlineSet]).forEach(async onlineUser => {
-                    const userExist = await User.find({username})
-
-                    if(userExist){
-                        console.log(userExist)
-                        if(banAction === "ban"){
-                            await User.updateOne({username}, { '$set': {"status.isBanned" : true} })
-
-                            const userExist2 = await User.find({username})
-
-                            io.emit("banUser", userExist2[0].status.isBanned)
-                            console.log(userExist2[0].status.isBanned)
-
-                            onlineSet.delete(client.currUser.username)
-                            client.disconnect(true)
-                            io.emit("fetchOnlineUsers", [...onlineSet]);
-
-                            console.log(onlineSet)
-                            console.log(Object.values([...onlineSet]))
-                        }else{
-                            await User.updateOne({username}, { '$set': {"status.isBanned" : false} })
-
-                            const userExist2 = await User.find({username})
-
-                            io.emit("unBanUser", userExist2[0].status.isBanned)
-                            console.log(userExist2[0].status.isBanned)
-
-                            console.log(onlineSet)
-                            console.log(Object.values([...onlineSet]))
-                        }
-                    }
-
-
-                })
-            }
-        }else{
-            console.log("Not that user")
-        }
-    }
-}
-
-
 io.on("connection", async socket => {
     socket.on("joinRoom", (chatRoom) => {
         socket.join(chatRoom);
@@ -143,7 +95,6 @@ io.on("connection", async socket => {
         console.log(socket.currUser.username + " leave the room: " + chatRoom)
     })
 
-
     socket.on("chatRoomMessage", async ({chatRoom, message}) => {
         const newMessage = new Message({
             message: message,
@@ -165,7 +116,6 @@ io.on("connection", async socket => {
         const users = await User.find({})
         io.emit("fetchAllUsers", users)
     })
-
     
     socket.on("muteUserUsername", async (username) => {
         if(onlineSet.has(username)){
@@ -201,16 +151,58 @@ io.on("connection", async socket => {
         io.emit("unMuteUserUsername", usr[0].status.isMuted)
     })
 
-
     socket.on("banUser", async (username) => {
-        banHandler(username, "ban")
+        const clients = await io.fetchSockets();
+
+        for(let client of clients){
+            if(client.currUser.username === username){
+                if(onlineSet.has(username)){
+                    Object.values([...onlineSet]).forEach(async onlineUser => {
+                        const userExist = await User.find({username})
+
+                        if(userExist){
+                            console.log(userExist)
+                            
+                            await User.updateOne({username}, { '$set': {"status.isBanned" : true} })
+
+                            const userExist2 = await User.find({username})
+
+                            io.emit("banUser", userExist2[0].status.isBanned)
+                            console.log(userExist2[0].status.isBanned)
+
+                            onlineSet.delete(client.currUser.username)
+                            client.disconnect(true)
+                            io.emit("fetchOnlineUsers", [...onlineSet]);
+
+                            console.log(onlineSet)
+                            console.log(Object.values([...onlineSet]))
+                        }
+                    })
+                }
+            }else{
+                console.log("Not that user")
+            }
+        }
     })
 
-    socket.on("unBanUser", (username) => {
-        banHandler(username, "unBan")
+    socket.on("unBanUser", async (username) => {
+        const userExist = await User.find({username})
+
+        if(userExist){
+            console.log(userExist)
+            
+            await User.updateOne({username}, { '$set': {"status.isBanned" : false} })
+
+            const userExist2 = await User.find({username})
+
+            io.emit("unBanUser", userExist2[0].status.isBanned)
+            console.log(userExist2[0].status.isBanned)
+
+            console.log(onlineSet)
+            console.log(Object.values([...onlineSet]))
+        }
     })
 
-    
     socket.on("disconnect", () => {
         socket.leave("chatRoom");
         
