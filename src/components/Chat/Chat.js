@@ -44,11 +44,6 @@ const Chat = () => {
             auth: {token}
         });
 
-        socketRef.current.on("newMessage", (message) => {
-            setNewMessages([...newMessages, message])
-            lastMessage.current = message
-        })
-
         socketRef.current.emit("joinRoom", "chatRoom")
 
         socketRef.current.on("fetchOnlineUsers", (onlineUser) => {
@@ -63,7 +58,14 @@ const Chat = () => {
             socketRef.current.emit("leaveRoom", "chatRoom")
             socketRef.current.close()
         }
-    }, [newMessages, token])
+    }, [token])
+
+    useEffect(() => {
+        socketRef.current.on("newMessage", (message) => {
+            setNewMessages([...newMessages, message])
+            lastMessage.current = message
+        })
+    }, [newMessages])
 
     useEffect(() => {
         socketRef.current.on("message", (msg) => {
